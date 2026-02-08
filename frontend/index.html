@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lap Time Bottleneck Finder</title>
+    <!-- Chart.js via CDN for visualising segment losses -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 1rem;
+        background-color: #f9fafb;
+        color: #111827;
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 1.8rem;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      label {
+        margin-right: 0.5rem;
+        font-weight: 600;
+      }
+      input[type="file"] {
+        display: inline-block;
+      }
+      input[type="number"] {
+        width: 6rem;
+      }
+
+      tr.highlight td {
+        font-weight: 700;
+      }
+
+      .hint {
+        margin-top: 0.5rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      button:hover {
+        background-color: #1d4ed8;
+      }
+      #loading {
+        display: none;
+        margin-top: 0.5rem;
+        font-style: italic;
+        color: #6b7280;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        background-color: white;
+      }
+      th,
+      td {
+        border: 1px solid #e5e7eb;
+        padding: 0.5rem;
+        text-align: right;
+      }
+      th {
+        background-color: #f3f4f6;
+        text-align: left;
+      }
+      tr:nth-child(even) {
+        background-color: #f9fafb;
+      }
+      canvas {
+        display: block;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Lap Time Bottleneck Finder</h1>
+    <p>
+      Upload a telemetry CSV file to analyse lap times, decompose your lap
+      by segments and identify where you are losing the most time. The
+      tool will rank segments by time lost relative to your best effort.
+    </p>
+
+    <div class="form-group">
+      <label for="file-input">Telemetry CSV:</label>
+      <input type="file" id="file-input" accept=".csv" />
+    </div>
+    <div class="form-group">
+      <label for="segment-count">Number of segments:</label>
+      <input
+        type="number"
+        id="segment-count"
+        value="4"
+        min="1"
+        max="20"
+        step="1"
+      />
+
+      <label for="brake-threshold">Brake threshold:</label>
+      <input
+        type="number"
+        id="brake-threshold"
+        value="0.15"
+        min="0"
+        max="1"
+        step="0.01"
+      />
+
+      <label for="throttle-threshold">Throttle threshold:</label>
+      <input
+        type="number"
+        id="throttle-threshold"
+        value="0.25"
+        min="0"
+        max="1"
+        step="0.01"
+      />
+
+      <button id="analyze-btn">Analyze</button>
+    </div>
+    <div id="loading">Analysing…</div>
+
+    <h2>Analysis Results</h2>
+    <table id="results-table">
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th>Avg Time (s)</th>
+          <th>Best Time (s)</th>
+          <th>Loss (s)</th>
+          <th>Brake Loss (s)</th>
+          <th>Exit Loss (s)</th>
+          <th>Late Throttle Loss (s)</th>
+          <th>Top Cause</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="hint">
+      <strong>How to read this:</strong> “Brake loss” is extra time with brake applied. “Exit loss” is extra time after the segment’s minimum speed. “Late throttle loss” estimates how long it takes to get back on throttle after that minimum speed.
+    </div>
+    <!-- Canvas for Chart.js -->
+    <canvas id="chart" width="800" height="400"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>
